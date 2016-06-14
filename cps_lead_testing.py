@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 LEAD_URL ='http://www.cps.edu/Pages/LeadTesting.aspx'
 CPS_URL = 'http://www.cps.edu'
 SCHOOLS_FILE = 'schools.csv'
+DIR = os.path.dirname(os.path.realpath(__file__))
 
 hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
 	   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -32,13 +33,12 @@ def scrape_cps(url):
 			if link_url.endswith('.pdf'):
 				schools.append({'school':school,'pdf':link_url})
 				print link_url, school
-
 	
 	check_list(schools)
 	make_csv(schools,SCHOOLS_FILE)				
 
 def download_pdfs(schools):
-	dir_name = 'pdfs'
+	dir_name = '%s/pdfs' % DIR
 
 	try:
 		os.stat(dir_name)
