@@ -35,9 +35,7 @@ def scrape_cps(url):
 
 	
 	check_list(schools)
-	# make_csv(schools,SCHOOLS_FILE)
-	# download_pdfs(schools)
-				
+	make_csv(schools,SCHOOLS_FILE)				
 
 def download_pdfs(schools):
 	dir_name = 'pdfs'
@@ -48,6 +46,7 @@ def download_pdfs(schools):
 		os.makedirs(dir_name)
 
 	for school in schools:
+		print "downloading %s" % school['school']
 		link_url = school['pdf']
 
 		r = requests.get(link_url,headers=hdr)
@@ -78,46 +77,47 @@ def make_csv(schools,output_file):
 
 def check_list(schools):
 	with open(SCHOOLS_FILE, 'rb') as f:
-	    old_schools = csv.DictReader(f, delimiter=',')
-	    new_schools = get_new_schools(old_schools,schools)
+		old_schools = csv.DictReader(f, delimiter=',')
+		new_schools = get_new_schools(old_schools,schools)
 
-	    if new_schools is not None:
-	    	print 'New results'
+		if new_schools is not None:
+			print 'New results: %s' % new_schools
 
-	    for school in new_schools:
-	    	send_email(school)
+			for school in new_schools:
+				send_email(school)
+				# download_pdfs(new_schools)
 
 def get_new_schools(list1, list2):
-    check = set([(d['school'], d['pdf']) for d in list1])
-    return [d for d in list2 if (d['school'], d['pdf']) not in check]
+	check = set([(d['school'], d['pdf']) for d in list1])
+	return [d for d in list2 if (d['school'], d['pdf']) not in check]
 
 # send an email with info from a report dictionary
 def send_email(new_school):
-    sender = os.environ.get('CPS_LEAD_RESULTS_GOOGLE_EMAIL')
-    pw = os.environ.get('CPS_LEAD_RESULTS_GOOGLE_PASS')
-    server = smtplib.SMTP('smtp.gmail.com:587')
-    server.starttls()
-    server.ehlo()
-    server.login(sender,pw)
-    # if more than one receiver, set up as a list and then join into a string for msg
-    COMMASPACE = ', '
-    receivers_list = ['chagan@wbez.org']
-    receivers = COMMASPACE.join(receivers_list)
+	sender = os.environ.get('CPS_LEAD_RESULTS_GOOGLE_EMAIL')
+	pw = os.environ.get('CPS_LEAD_RESULTS_GOOGLE_PASS')
+	server = smtplib.SMTP('smtp.gmail.com:587')
+	server.starttls()
+	server.ehlo()
+	server.login(sender,pw)
+	# if more than one receiver, set up as a list and then join into a string for msg
+	COMMASPACE = ', '
+	receivers_list = ['chagan@wbez.org']
+	receivers = COMMASPACE.join(receivers_list)
 
-    message = """
-    {school}
-    {pdf}
-    """.format(**new_school)
+	message = """
+	{school}
+	{pdf}
+	""".format(**new_school)
 
-    msg = MIMEText(message)
-    msg['Subject'] = "New CPS lead testing results: %s" % (new_school['school'])
-    msg['From'] = sender
-    msg['To'] = receivers
-    try:
-       server.sendmail(sender, receivers_list, msg.as_string())         
-       print "Successfully sent email"
-    except smtplib.SMTPException:
-       print "Error: unable to send email"
+	msg = MIMEText(message)
+	msg['Subject'] = "New CPS lead testing results: %s" % (new_school['school'])
+	msg['From'] = sender
+	msg['To'] = receivers
+	try:
+	   server.sendmail(sender, receivers_list, msg.as_string())      
+	   print "Successfully sent email"
+	except smtplib.SMTPException:
+	   print "Error: unable to send email"
 
 
 # runs the function specified
