@@ -32,7 +32,6 @@ def scrape_cps(url):
 		if link_url is not None and 'CPS' not in school:
 			if link_url.endswith('.pdf'):
 				schools.append({'school':school,'pdf':link_url})
-				print link_url, school
 	
 	check_list(schools)
 	make_csv(schools,SCHOOLS_FILE)				
@@ -79,13 +78,15 @@ def check_list(schools):
 	with open(SCHOOLS_FILE, 'rb') as f:
 		old_schools = csv.DictReader(f, delimiter=',')
 		new_schools = get_new_schools(old_schools,schools)
-
-		if new_schools is not None:
-			print 'New results: %s' % new_schools
+		
+		if new_schools:
 
 			for school in new_schools:
+				print 'New results: %s' % school['school']
 				send_email(school)
 				# download_pdfs(new_schools)
+		else:
+			print "No new schools"
 
 def get_new_schools(list1, list2):
 	check = set([(d['school'], d['pdf']) for d in list1])
