@@ -83,7 +83,7 @@ def check_list(schools):
 
 			for school in new_schools:
 				print 'New results: %s' % school['school']
-				send_email(school)
+				# send_email(school)
 				# download_pdfs(new_schools)
 		else:
 			print "No new schools"
